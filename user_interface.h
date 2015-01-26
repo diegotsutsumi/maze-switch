@@ -6,7 +6,15 @@
 #define UI_BTN_DEBOUNCING_TIME 3
 #define UI_BTN_CANCEL_TIME 2000
 
+#define UI_DISP_BLINKING_TIME 500
 #define UI_DISP_WORD_SIZE 28
+#define UI_DISP_ALL_MASK 0xFFFFFFF
+#define UI_DISP_7SEG_MASK 0x7F00000
+#define UI_DISP_VOL_MASK 0x7F700
+#define UI_DISP_PEDAL_MASK 0xF4
+#define UI_DISP_FOOT_MASK 0x80808
+#define UI_DISP_BUFFER_MASK 0x3
+
 typedef enum
 {
 	FOOT_1_PRESSED,
@@ -14,7 +22,8 @@ typedef enum
 	FOOT_3_PRESSED,
 	FOOT_LEFT_PRESSED,
 	FOOT_RIGHT_PRESSED,
-	BUFFER_SWITCHED,
+	BUFFER_SWITCHED_ON,
+	BUFFER_SWITCHED_OFF,
 	SAVE_OK,
 	SAVE_CANCEL,
 	ERROR
@@ -24,8 +33,6 @@ typedef enum
 {
 	LOCK, //External
 	RELEASE, //External
-	SAVE_RISING_EDGE, //Detected by Hardware change
-	SAVE_FALLING_EDGE
 }UI_BUTTON_EVENTS;
 
 typedef enum
@@ -36,7 +43,7 @@ typedef enum
 	UI_BTN_STATE_CountingEditButton
 }UI_BUTTON_STATES;
 
-typedef void (*UI_Action_Handler)(UI_BUTTON_ACTIONS action);
+typedef void (*UI_ActionHandler)(UI_BUTTON_ACTIONS action);
 
 typedef union
 {
@@ -61,7 +68,7 @@ typedef struct
 	Switches switchesState;
 	Switches switchesNewState;
 	unsigned char editButton
-	UI_Action_Handler actionHandler;
+	UI_ActionHandler actionHandler;
 	unsigned short timerDebounce;
 	unsigned int editTimer;
 	unsigned char editTimerEnabled;
@@ -72,7 +79,20 @@ typedef struct
 
 typedef enum
 {
-	UI_DISPLAY_SEND_INFO
+	UI_DISPLAY_ALL=0,
+	UI_DISPLAY_7SEG,
+	UI_DISPLAY_VOLUME,
+	UI_DISPLAY_LEDPEDAL,
+	UI_DISPLAY_LEDFOOT,
+	UI_DISPLAY_LEDBUFFER,
+	UI_DISPLAY_CUSTOM
+}UI_DISPLAY_PARTS;
+
+typedef enum
+{
+	UI_DISPLAY_UPDATE,
+	UI_DISPLAY_START_BLINKING,
+	UI_DISPLAY_STOP_BLINKING
 }UI_DISPLAY_EVENTS;
 
 typedef enum
@@ -89,7 +109,7 @@ typedef enum
 	UI_DISP_STATE_SendingInfo
 }UI_DISPLAY_STATES;
 
-typedef union //TODO: Reorder according to the hardware wiring
+typedef union
 {
 	struct
 	{
@@ -134,11 +154,21 @@ typedef union //TODO: Reorder according to the hardware wiring
 typedef struct
 {
 	UI_DISPLAY_STATES currentState;
+	
+	Display currentDisp;
+	Display whichBlinks;
+	Display bufferBlink;
 	Display bufferOut;
+	
 	unsigned char buffCount;
 	unsigned char entry_flag;
 	UI_DISPLAY_CONTROL control;
-	unsigned short timerCount;
+	
+	unsigned char updatePending;
+	
+	unsigned int blinkTimer;
+	unsigned char blinkTimerEnabled;
+	unsigned char blinkTurn;
 }DISP_Data;
 
 
@@ -152,7 +182,7 @@ void UI_ButtonsExtEvent(UI_BUTTON_EVENTS extEvent);
 void UI_DisplayInit();
 unsigned char UI_DisplayEncoder(unsigned char _7seg, unsigned char volume, unsigned char pedals, unsigned char foots, unsigned char bufferSwitches, unsigned char edit, Display * disp_out);
 void UI_DisplayStateMachine();
-void UI_DisplayExtEvent(UI_DISPLAY_EVENTS extEvent, Display * eventData);
+void UI_DisplayExtEvent(UI_DISPLAY_EVENTS extEvent, void * eventData, void * eventData2);
 
 void UI_TIM2_ISR();
 #endif

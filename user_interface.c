@@ -107,6 +107,10 @@ void UI_ButtonsStateMachine()
 						{
 							btnData.actionHandler(FOOT_RIGHT_PRESSED);
 						}
+						else if(diff.buffSwitch)
+						{
+							btnData.actionHandler((btnData.switchesNewState.buffSwitch)?BUFFER_SWITCHED_ON:BUFFER_SWITCHED_OFF);
+						}
 						else
 						{
 							btnData.actionHandler(ERROR);
@@ -276,9 +280,21 @@ unsigned char UI_DisplayEncoder(unsigned char _7seg, unsigned char volume, unsig
 
 void UI_DisplayInit()
 {
+	dispData.currentDisp.displayWord=0;
+	dispData.whichBlinks.displayWord=0;
+	dispData.bufferBlink.displayWord=0;
+	dispData.bufferOut.displayWord=0;
+
+	dispData.buffCount=0;	
 	dispData.entry_flag=0;
-	dispData.buffCount=0;
 	dispData.control=UI_DISPLAY_INIT_BIT;
+
+	dispData.updatePending=0;
+	
+	dispData.blinkTimer=0;
+	dispData.blinkTimerEnabled=0;
+	dispData.blinkTurn=0;
+	
 	dispData.currentState=UI_DISP_STATE_Idle;
 }
 
@@ -288,6 +304,34 @@ void UI_DisplayStateMachine()
 	{
 		case UI_DISP_STATE_Idle:
 		{
+			if(dispData.updatePending)
+			{
+				dispData.updatePending=0;
+				dispData.bufferOut.displayWord = dispData.currentDisp.displayWord;
+				
+				if(!dispData.blinkTimerEnabled)
+				{
+					dispData.currentState=UI_DISP_STATE_SendingInfo;
+				}
+			}
+			else
+			{
+				if(dispData.blinkTimerEnabled && dispData.blinkTimer>=UI_DISP_BLINKING_TIME)
+				{
+					dispData.blinkTimer=0;
+					if(dispData.blinkTurn==0)
+					{
+						dispData.blinkTurn=1;
+						dispData.bufferOut.displayWord = dispData.bufferBlink.displayWord;
+					}
+					else
+					{
+						dispData.blinkTurn=0;
+						dispData.bufferOut.displayWord = dispData.currentDisp.displayWord;
+					}
+					dispData.currentState=UI_DISP_STATE_SendingInfo;
+				}
+			}
 		}
 		break;
 		
@@ -356,23 +400,146 @@ void UI_DisplayStateMachine()
 	}
 }
 
-void UI_DisplayExtEvent(UI_DISPLAY_EVENTS extEvent, Display * eventData)
+void UI_DisplayAddWhichBlinks(UI_DISPLAY_PARTS part, Display customAdd)
+{
+	switch(part)
+	{
+		case UI_DISPLAY_ALL:
+		{
+			dispData.whichBlinks.displayWord|=UI_DISP_ALL_MASK;
+		}
+		break;
+		case UI_DISPLAY_7SEG:
+		{
+			dispData.whichBlinks.displayWord|=UI_DISP_7SEG_MASK;
+		}
+		break;
+		case UI_DISPLAY_VOLUME:
+		{
+			dispData.whichBlinks.displayWord|=UI_DISP_VOL_MASK;
+		}
+		break;
+		case UI_DISPLAY_LEDPEDAL:
+		{
+			dispData.whichBlinks.displayWord|=UI_DISP_PEDAL_MASK;
+		}
+		break;
+		case UI_DISPLAY_LEDFOOT:
+		{
+			dispData.whichBlinks.displayWord|=UI_DISP_FOOT_MASK;
+		}
+		break;
+		case UI_DISPLAY_LEDBUFFER:
+		{
+			dispData.whichBlinks.displayWord|=UI_DISP_BUFFER_MASK;
+		}
+		break;
+		case UI_DISPLAY_CUSTOM:
+		{
+			dispData.whichBlinks.displayWord|=customAdd.displayWord;
+		}
+		default:
+		{
+		}
+		break;
+	}
+}
+
+void UI_DisplayRemoveWhichBlinks(UI_DISPLAY_PARTS part, Display customRemove)
+{
+	switch(part)
+	{
+		case UI_DISPLAY_ALL:
+		{
+			dispData.whichBlinks.displayWord&=~(UI_DISP_ALL_MASK);
+		}
+		break;
+		case UI_DISPLAY_7SEG:
+		{
+			dispData.whichBlinks.displayWord&=~(UI_DISP_7SEG_MASK);
+		}
+		break;
+		case UI_DISPLAY_VOLUME:
+		{
+			dispData.whichBlinks.displayWord&=~(UI_DISP_VOL_MASK);
+		}
+		break;
+		case UI_DISPLAY_LEDPEDAL:
+		{
+			dispData.whichBlinks.displayWord&=~(UI_DISP_PEDAL_MASK);
+		}
+		break;
+		case UI_DISPLAY_LEDFOOT:
+		{
+			dispData.whichBlinks.displayWord&=~(UI_DISP_FOOT_MASK);
+		}
+		break;
+		case UI_DISPLAY_LEDBUFFER:
+		{
+			dispData.whichBlinks.displayWord&=~(UI_DISP_BUFFER_MASK);
+		}
+		break;
+		case UI_DISPLAY_CUSTOM:
+		{
+			dispData.whichBlinks.displayWord&=~(customRemove.displayWord);
+		}
+		break;
+		default:
+		{
+		}
+		break;
+	}
+}
+
+
+void UI_DisplayExtEvent(UI_DISPLAY_EVENTS extEvent, void * eventData, void * eventData2)
 {
 	switch(extEvent)
 	{
-		case UI_DISPLAY_SEND_INFO:
+		case UI_DISPLAY_UPDATE:
 		{
-			if(dispData.currentState==UI_DISP_STATE_Idle)
+			dispData.currentDisp.displayWord = ((Display)(*eventData)).displayWord;
+			dispData.bufferBlink.displayWord = dispData.currentDisp.displayWord;
+			dispData.bufferBlink.displayWord &= ~(dispData.whichBlinks.displayWord);
+			dispData.updatePending=1;
+		}
+		break;
+		
+		case UI_DISPLAY_START_BLINKING:
+		{
+			if(!dispData.blinkTimerEnabled)
 			{
-				dispData.bufferOut.displayWord = (*eventData).displayWord;
-				dispData.entry_flag=1;
-				dispData.currentState = UI_DISP_STATE_SendingInfo;
+				dispData.blinkTimer=0;
+				dispData.blinkTimerEnabled=1;
+			}
+			
+			UI_DisplayAddWhichBlinks((UI_DISPLAY_PARTS)(*eventData), (Display)(*eventData2));
+			dispData.bufferBlink.displayWord = dispData.currentDisp.displayWord;
+			dispData.bufferBlink.displayWord &= ~(dispData.whichBlinks.displayWord);
+		}
+		break;
+		
+		case UI_DISPLAY_STOP_BLINKING:
+		{
+			if(dispData.blinkTimerEnabled)
+			{
+				if(((UI_DISPLAY_PARTS)(*eventData)==UI_DISPLAY_ALL) ||
+					((eventData2)?1:0 && ((Display)(*eventData2).displayWord==0xFFFFFFF)))
+				{
+					dispData.blinkTimerEnabled=0;
+					dispData.blinkTimer=0;
+				}
+				
+				UI_DisplayRemoveWhichBlinks((UI_DISPLAY_PARTS)(*eventData), (Display)(*eventData2));
+				dispData.bufferBlink.displayWord = dispData.currentDisp.displayWord;
+				dispData.bufferBlink.displayWord &= ~(dispData.whichBlinks.displayWord);
 			}
 		}
 		break;
 		
 		default:
 		{
+		
 		}
 		break;
 	}
@@ -390,8 +557,8 @@ void UI_TIM2_ISR()
 	}
 	
 	
-	if(dispData.timerCount>0)
+	if(dispData.blinkTimerEnabled)
 	{
-		dispData.timerCount--;
+		dispData.blinkTimer++;
 	}
 }

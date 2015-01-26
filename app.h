@@ -60,6 +60,7 @@ typedef struct
 	Relays relayState;
 	Display displayState;
 	APP_State current_state;
+	unsigned char currentBank;
 }APP_Data;
 
 void APP_Init();
