@@ -22,7 +22,7 @@ typedef union
 		unsigned short :7;
 
 		unsigned short :4;
-		
+
 		unsigned short PedalChunk:5;
 	};
 	struct

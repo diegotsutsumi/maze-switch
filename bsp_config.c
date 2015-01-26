@@ -35,7 +35,7 @@ void BSP_Init()
 	
 	
 	
-	/*GPIO_InitStructure.GPIO_Pin = Footswitch1_pin;
+	GPIO_InitStructure.GPIO_Pin = Footswitch1_pin;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_Init(Footswitch1_port, &GPIO_InitStructure);
@@ -60,10 +60,15 @@ void BSP_Init()
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_Init(FootswitchRight_port, &GPIO_InitStructure);
 	
-	GPIO_InitStructure.GPIO_Pin = SaveButton_pin;
+	GPIO_InitStructure.GPIO_Pin = BufferSwitch_pin;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(BufferSwitch_port, &GPIO_InitStructure);
+	
+	GPIO_InitStructure.GPIO_Pin = EditButton_pin;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_Init(SaveButton_port, &GPIO_InitStructure);*/
+	GPIO_Init(EditButton_port, &GPIO_InitStructure);
 	
 	
 	

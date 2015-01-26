@@ -11,27 +11,53 @@ void UI_Init()
 
 void UI_Tasks()
 {
-	//UI_ButtonsStateMachine();
+	UI_ButtonsStateMachine();
 	UI_DisplayStateMachine();
 }
 
 void UI_ButtonsInit()
 {
-	//TODO: Read all footswitch states. And load it to RAM memory
-	//They'll be random states and we just manage transitions
+	btnData.actionHandler=0;
+	btnData.timerDebounce=0;
+	btnData.editTimer=0;
+	btnData.editTimerEnabled=0;
+	btnData.switchesState.switchesByte=0;
+	btnData.switchesNewState.switchesByte=0;
+	btnData.currentState = UI_BTN_STATE_Init;
 }
 
 void UI_ButtonsStateMachine()
 {
 	switch(btnData.currentState)
 	{
+		case UI_BTN_STATE_Init:
+		{
+			btnData.switchesState.foot1 = GPIO_ReadInputDataBit(Footswitch1_port, Footswitch1_pin);
+			btnData.switchesState.foot2 = GPIO_ReadInputDataBit(Footswitch2_port, Footswitch2_pin);
+			btnData.switchesState.foot3 = GPIO_ReadInputDataBit(Footswitch3_port, Footswitch3_pin);
+			btnData.switchesState.footLeft = GPIO_ReadInputDataBit(FootswitchLeft_port, FootswitchLeft_pin);
+			btnData.switchesState.footRight = GPIO_ReadInputDataBit(FootswitchRight_port, FootswitchRight_pin);
+			btnData.switchesState.buffSwitch = GPIO_ReadInputDataBit(BufferSwitch_port, BufferSwitch_pin);
+			
+			//btnData.editButton = GPIO_ReadInputDataBit(EditButton_port, EditButton_pin);
+			
+			btnData.currentState = UI_BTN_STATE_ListeningButtons;
+		}
 		case UI_BTN_STATE_ListeningButtons:
 		{
-			//TODO: Poll all the switches
-			if(0/*Reading different from btnData.allSwitches.switchesByte*/)
+			btnData.switchesNewState.foot1 = GPIO_ReadInputDataBit(Footswitch1_port, Footswitch1_pin);
+			btnData.switchesNewState.foot2 = GPIO_ReadInputDataBit(Footswitch2_port, Footswitch2_pin);
+			btnData.switchesNewState.foot3 = GPIO_ReadInputDataBit(Footswitch3_port, Footswitch3_pin);
+			btnData.switchesNewState.footLeft = GPIO_ReadInputDataBit(FootswitchLeft_port, FootswitchLeft_pin);
+			btnData.switchesNewState.footRight = GPIO_ReadInputDataBit(FootswitchRight_port, FootswitchRight_pin);
+			btnData.switchesNewState.buffSwitch = GPIO_ReadInputDataBit(BufferSwitch_port, BufferSwitch_pin);
+			
+			btnData.editButton = GPIO_ReadInputDataBit(EditButton_port, EditButton_pin);
+			
+			if((btnData.switchesState.switches != btnData.switchesNewState.switches) || 
+				(btnData.editButton==0))
 			{
-				//Start Bouncing timer
-				//btnData.beforeBounce = currentReading
+				btnData.timerDebounce = UI_BTN_DEBOUNCING_TIME;
 				btnData.currentState = UI_BTN_STATE_Debouncing;
 			}
 		}
@@ -39,36 +65,79 @@ void UI_ButtonsStateMachine()
 		
 		case UI_BTN_STATE_Debouncing:
 		{
-			if(0/*Bouncing Timer Finished*/)
+			if(btnData.timerDebounce==0)
 			{
-				//Poll all the switches
+				btnData.switchesNewState.foot1 = GPIO_ReadInputDataBit(Footswitch1_port, Footswitch1_pin);
+				btnData.switchesNewState.foot2 = GPIO_ReadInputDataBit(Footswitch2_port, Footswitch2_pin);
+				btnData.switchesNewState.foot3 = GPIO_ReadInputDataBit(Footswitch3_port, Footswitch3_pin);
+				btnData.switchesNewState.footLeft = GPIO_ReadInputDataBit(FootswitchLeft_port, FootswitchLeft_pin);
+				btnData.switchesNewState.footRight = GPIO_ReadInputDataBit(FootswitchRight_port, FootswitchRight_pin);
+				btnData.switchesNewState.buffSwitch = GPIO_ReadInputDataBit(BufferSwitch_port, BufferSwitch_pin);
+				
+				btnData.editButton = GPIO_ReadInputDataBit(EditButton_port, EditButton_pin);
 
-				if(0/*GPIO READ Save button == 0*/)
+				if(btnData.editButton==0)
 				{
-					//start save button timer
-					btnData.currentState = UI_BTN_STATE_CountingSaveButton;
+					btnData.editTimer=0;
+					btnData.editTimerEnabled=1;
+					btnData.currentState = UI_BTN_STATE_CountingEditButton;
 				}
-			
-				//If any other button was pressed:
-					//generate an Action
-					//btnData.currentState = UI_BTN_STATE_WaitingRelease;
+				else
+				{
+					{
+						Switches diff;
+						diff.switchesByte = btnData.switchesState.switchesByte ^ btnData.switchesNewState.switchesByte;
+						if(diff.foot1)
+						{
+							btnData.actionHandler(FOOT_1_PRESSED);
+						}
+						else if(diff.foot2)
+						{
+							btnData.actionHandler(FOOT_2_PRESSED);
+						}
+						else if(diff.foot3)
+						{
+							btnData.actionHandler(FOOT_3_PRESSED);
+						}
+						else if(diff.footLeft)
+						{
+							btnData.actionHandler(FOOT_LEFT_PRESSED);
+						}
+						else if(diff.footRight)
+						{
+							btnData.actionHandler(FOOT_RIGHT_PRESSED);
+						}
+						else
+						{
+							btnData.actionHandler(ERROR);
+						}
+						btnData.currentState = UI_BTN_STATE_WaitingRelease;
+					}
+				}
 			}
 		}
 		break;
 		
 		case UI_BTN_STATE_WaitingRelease:
 		{
-			//TODO: Poll all the switches
-				//btnData.allSwitches = current reading; //To keep tracking the state change but not doing any actions
 		}
 		break;
 		
-		case UI_BTN_STATE_CountingSaveButton:
+		case UI_BTN_STATE_CountingEditButton:
 		{
-			if(0/*GPIO Read Save Button == 1*/)
+			btnData.editButton = GPIO_ReadInputDataBit(EditButton_port, EditButton_pin);
+			if(btnData.editButton)
 			{
-				//TODO: Count the timer and generate Save Action
-				//btnData.currentState = UI_BTN_STATE_WaitingRelease;
+				btnData.editTimerEnabled=0;
+				if(btnData.editTimer>=UI_BTN_CANCEL_TIME)
+				{
+					btnData.actionHandler(SAVE_CANCEL);
+				}
+				else
+				{
+					btnData.actionHandler(SAVE_OK);
+				}
+				btnData.currentState = UI_BTN_STATE_WaitingRelease;
 			}
 		}
 		break;
@@ -209,7 +278,7 @@ void UI_DisplayInit()
 {
 	dispData.entry_flag=0;
 	dispData.buffCount=0;
-	dispData.control=0;
+	dispData.control=UI_DISPLAY_INIT_BIT;
 	dispData.currentState=UI_DISP_STATE_Idle;
 }
 
@@ -228,7 +297,7 @@ void UI_DisplayStateMachine()
 			{
 				dispData.entry_flag=0;
 				dispData.buffCount=0;
-				dispData.control=0;
+				dispData.control=UI_DISPLAY_INIT_BIT;
 			}
 			else
 			{
@@ -311,5 +380,18 @@ void UI_DisplayExtEvent(UI_DISPLAY_EVENTS extEvent, Display * eventData)
 
 void UI_TIM2_ISR()
 {
-
+	if(btnData.timerDebounce>0)
+	{
+		btnData.timerDebounce--;
+	}
+	if(btnData.editTimerEnabled)
+	{
+		btnData.editTimer++;
+	}
+	
+	
+	if(dispData.timerCount>0)
+	{
+		dispData.timerCount--;
+	}
 }

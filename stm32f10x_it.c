@@ -157,6 +157,8 @@ void SysTick_Handler(void)
   */ 
 void TIM2_IRQHandler(void)
 {
+	UI_TIM2_ISR();
+	TIM_ClearITPendingBit(TIM2, TIM_FLAG_Update);
 }
 
 /******************* (C) COPYRIGHT 2011 STMicroelectronics *****END OF FILE****/

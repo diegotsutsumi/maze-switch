@@ -12,5 +12,6 @@ void SYS_Initialize();
 void SYS_ClockInit();
 void SYS_FlashInit();
 void SYS_TimerInit();
+void SYS_NVICInit();
 
 #endif

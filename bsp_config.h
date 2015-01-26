@@ -32,7 +32,10 @@
 #define FootswitchRight_pin		GPIO_Pin_4
 #define FootswitchRight_port	GPIOA
 
-#define SaveButton_pin		GPIO_Pin_8
-#define SaveButton_port		GPIOA
+#define BufferSwitch_pin		GPIO_Pin_0 //TODO: Verify with the Hardware
+#define BufferSwitch_port		GPIOA //TODO: Verify with the hardawre
+
+#define EditButton_pin		GPIO_Pin_8
+#define EditButton_port		GPIOA
 
 void BSP_Init();

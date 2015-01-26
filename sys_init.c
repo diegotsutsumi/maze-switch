@@ -5,10 +5,13 @@ void SYS_Initialize()
 	SYS_ClockInit();
 	BSP_Init();
 	SYS_FlashInit();
+	SYS_NVICInit();
 	SYS_TimerInit();
 	
 	UI_Init();
 	APP_Init();
+	
+	TIM_Cmd(TIM2, ENABLE);
 }
 
 void SYS_ClockInit()
@@ -58,5 +61,22 @@ void SYS_TimerInit()
 	tmrInit.TIM_ClockDivision=TIM_CKD_DIV1;
 	
 	TIM_TimeBaseInit(TIM2,&tmrInit);
+	TIM_PrescalerConfig(TIM2, 16, TIM_PSCReloadMode_Immediate);
+	TIM_ClearFlag(TIM2, TIM_FLAG_Update);
+	TIM_ITConfig(TIM2, TIM_IT_Update, DISABLE);
+	
 	TIM_Cmd(TIM2, DISABLE);
+}
+
+void SYS_NVICInit()
+{
+	NVIC_InitTypeDef NVIC_InitStructure;  
+
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1); // O que é isso?
+
+	NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStructure);
 }

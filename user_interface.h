@@ -3,8 +3,8 @@
 
 #include "bsp_config.h"
 
-#define UI_BTN_DEBOUNCING_TIME 2
-#define UI_BTN_CANCEL_TIME 1000
+#define UI_BTN_DEBOUNCING_TIME 3
+#define UI_BTN_CANCEL_TIME 2000
 
 #define UI_DISP_WORD_SIZE 28
 typedef enum
@@ -12,11 +12,12 @@ typedef enum
 	FOOT_1_PRESSED,
 	FOOT_2_PRESSED,
 	FOOT_3_PRESSED,
-	FOOT_4_PRESSED,
-	FOOT_5_PRESSED,
+	FOOT_LEFT_PRESSED,
+	FOOT_RIGHT_PRESSED,
 	BUFFER_SWITCHED,
 	SAVE_OK,
-	SAVE_CANCEL
+	SAVE_CANCEL,
+	ERROR
 }UI_BUTTON_ACTIONS;
 
 typedef enum
@@ -32,7 +33,7 @@ typedef enum
 	UI_BTN_STATE_ListeningButtons,
 	UI_BTN_STATE_Debouncing,
 	UI_BTN_STATE_WaitingRelease,
-	UI_BTN_STATE_CountingSaveButton
+	UI_BTN_STATE_CountingEditButton
 }UI_BUTTON_STATES;
 
 typedef void (*UI_Action_Handler)(UI_BUTTON_ACTIONS action);
@@ -44,29 +45,26 @@ typedef union
 		unsigned char foot1:1;
 		unsigned char foot2:1;
 		unsigned char foot3:1;
-		unsigned char foot4:1;
-		unsigned char foot5:1;
+		unsigned char footLeft:1;
+		unsigned char footRight:1;
 		unsigned char buffSwitch:1;
-		unsigned char editButton:1;
 	};
 	struct
 	{
-		unsigned char foots:5;
-		unsigned char :1;
-		unsigned char :1;
-	};
-	struct
-	{
-	    unsigned char switchesByte:7;
+	    unsigned char switchesByte:6;
 	};
 }Switches;
 
 typedef struct
 {
 	UI_BUTTON_STATES currentState;
-	Switches allSwitches;
-	Switches beforeBounce; //Just in case
+	Switches switchesState;
+	Switches switchesNewState;
+	unsigned char editButton
 	UI_Action_Handler actionHandler;
+	unsigned short timerDebounce;
+	unsigned int editTimer;
+	unsigned char editTimerEnabled;
 }BTN_Data;
 
 
@@ -139,7 +137,8 @@ typedef struct
 	Display bufferOut;
 	unsigned char buffCount;
 	unsigned char entry_flag;
-	unsigned char control;
+	UI_DISPLAY_CONTROL control;
+	unsigned short timerCount;
 }DISP_Data;
 
 
