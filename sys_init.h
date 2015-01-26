@@ -5,6 +5,8 @@
 #include "stm32f10x_flash.h"
 #include "stm32f10x_tim.h"
 #include "bsp_config.h"
+#include "user_interface.h"
+#include "app.h"
 
 void SYS_Initialize();
 void SYS_ClockInit();

@@ -3,7 +3,7 @@ void BSP_Init()
 {
 	GPIO_InitTypeDef GPIO_InitStructure;
 
-	/*GPIO_InitStructure.GPIO_Pin = Relay1_Pin;
+	GPIO_InitStructure.GPIO_Pin = Relay1_Pin;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_Init(Relay1_Port, &GPIO_InitStructure);
@@ -35,7 +35,7 @@ void BSP_Init()
 	
 	
 	
-	GPIO_InitStructure.GPIO_Pin = Footswitch1_pin;
+	/*GPIO_InitStructure.GPIO_Pin = Footswitch1_pin;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_Init(Footswitch1_port, &GPIO_InitStructure);

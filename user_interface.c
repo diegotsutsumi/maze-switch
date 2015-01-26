@@ -5,18 +5,20 @@ DISP_Data dispData;
 
 void UI_Init()
 {
-	unsigned int i = 0;
-	for(i=0;i<50;i++); //small delay
-	
-	
-	//TODO: Read all footswitch states. And load it to RAM memory
-	//They'll be random states and we just manage transitions
+	UI_ButtonsInit();
+	UI_DisplayInit();
 }
 
 void UI_Tasks()
 {
 	//UI_ButtonsStateMachine();
 	UI_DisplayStateMachine();
+}
+
+void UI_ButtonsInit()
+{
+	//TODO: Read all footswitch states. And load it to RAM memory
+	//They'll be random states and we just manage transitions
 }
 
 void UI_ButtonsStateMachine()
@@ -122,7 +124,7 @@ unsigned char UI_DisplayEncoder(unsigned char _7seg, unsigned char volume, unsig
 	}
 	if(_7seg!=0 && _7seg!=1 && _7seg!=7)
 	{
-		(*disp_out)._7SegUp=1;
+		(*disp_out)._7SegMiddle=1;
 	}
 	if(_7seg!=1 && _7seg!=4 && _7seg!=7)
 	{
@@ -186,21 +188,29 @@ unsigned char UI_DisplayEncoder(unsigned char _7seg, unsigned char volume, unsig
 		(*disp_out).VolumeBar10=1;
 	}
 	
-	(*disp_out).LEDPedal1=pedals & (0x01 << 0);
-	(*disp_out).LEDPedal2=pedals & (0x01 << 1);
-	(*disp_out).LEDPedal3=pedals & (0x01 << 2);
-	(*disp_out).LEDPedal4=pedals & (0x01 << 3);
-	(*disp_out).LEDPedal5=pedals & (0x01 << 4);
+	(*disp_out).LEDPedal1=(pedals & (0x01 << 0))?1:0;
+	(*disp_out).LEDPedal2=(pedals & (0x01 << 1))?1:0;
+	(*disp_out).LEDPedal3=(pedals & (0x01 << 2))?1:0;
+	(*disp_out).LEDPedal4=(pedals & (0x01 << 3))?1:0;
+	(*disp_out).LEDPedal5=(pedals & (0x01 << 4))?1:0;
 	
-	(*disp_out).LEDFoot1=foots & (0x01 << 0);
-	(*disp_out).LEDFoot2=foots & (0x01 << 1);
-	(*disp_out).LEDFoot3=foots & (0x01 << 2);
+	(*disp_out).LEDFoot1=(foots & (0x01 << 0))?1:0;
+	(*disp_out).LEDFoot2=(foots & (0x01 << 1))?1:0;
+	(*disp_out).LEDFoot3=(foots & (0x01 << 2))?1:0;
 	
-	(*disp_out).LEDBuffer=bufferSwitches & (0x01 << 0);
-	(*disp_out).LEDSwBuffer=bufferSwitches & (0x01 << 1);
+	(*disp_out).LEDBuffer=(bufferSwitches & (0x01 << 0))?1:0;
+	(*disp_out).LEDSwBuffer=(bufferSwitches & (0x01 << 1))?1:0;
 	
 	(*disp_out).LEDEdit=edit;
 	return 1;
+}
+
+void UI_DisplayInit()
+{
+	dispData.entry_flag=0;
+	dispData.buffCount=0;
+	dispData.control=0;
+	dispData.currentState=UI_DISP_STATE_Idle;
 }
 
 void UI_DisplayStateMachine()
@@ -226,13 +236,16 @@ void UI_DisplayStateMachine()
 				{
 					case UI_DISPLAY_INIT_BIT:
 					{
-						if(dispData.buffCount>UI_DISP_WORD_SIZE)
+						if(dispData.buffCount>=UI_DISP_WORD_SIZE)
 						{
-							dispData.control = 3;
+							dispData.control = UI_DISPLAY_LATCH_EN;
 							GPIO_SetBits(Display_LatchEnable_Port,Display_LatchEnable_Pin);
 						}
-						GPIO_ResetBits(Display_Clock_Port, Display_Clock_Pin);
-						dispData.control = 1;
+                        else
+                        {
+                            GPIO_ResetBits(Display_Clock_Port, Display_Clock_Pin);
+                            dispData.control = UI_DISPLAY_WRITE_BIT;
+                        }
 					}
 					break;
 					case UI_DISPLAY_WRITE_BIT:
@@ -245,24 +258,24 @@ void UI_DisplayStateMachine()
 						{
 							GPIO_ResetBits(Display_SerialIn_Port, Display_SerialIn_Pin);
 						}
-						dispData.control = 2;
+						dispData.control = UI_DISPLAY_FLIP_CLOCK;
 					}
 					break;
 					case UI_DISPLAY_FLIP_CLOCK:
 					{
 						GPIO_SetBits(Display_Clock_Port, Display_Clock_Pin);
 						dispData.buffCount++;
-						dispData.control=0;
+						dispData.control=UI_DISPLAY_INIT_BIT;
 					}
 					break;
 					case UI_DISPLAY_LATCH_EN:
 					{
 						GPIO_ResetBits(Display_LatchEnable_Port,Display_LatchEnable_Pin);
 						dispData.currentState=UI_DISP_STATE_Idle;
+						dispData.entry_flag=0;
 					}
 					break;
 				}
-				GPIO_ResetBits(Display_Clock_Port, Display_Clock_Pin);	
 			}
 		}
 		break;

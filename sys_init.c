@@ -6,6 +6,9 @@ void SYS_Initialize()
 	BSP_Init();
 	SYS_FlashInit();
 	SYS_TimerInit();
+	
+	UI_Init();
+	APP_Init();
 }
 
 void SYS_ClockInit()

@@ -124,7 +124,7 @@ typedef union //TODO: Reorder according to the hardware wiring
 		unsigned int _7SegDown:1;
 		unsigned int _7SegLeftDown:1;
 		unsigned int _7SegLeftUp:1;
-		unsigned int _7SegMiddle:1;		
+		unsigned int _7SegMiddle:1;
 		unsigned int LEDEdit:1;
 	};
 	struct
@@ -146,9 +146,11 @@ typedef struct
 void UI_Init();
 void UI_Tasks();
 
+void UI_ButtonsInit();
 void UI_ButtonsStateMachine();
 void UI_ButtonsExtEvent(UI_BUTTON_EVENTS extEvent);
 
+void UI_DisplayInit();
 unsigned char UI_DisplayEncoder(unsigned char _7seg, unsigned char volume, unsigned char pedals, unsigned char foots, unsigned char bufferSwitches, unsigned char edit, Display * disp_out);
 void UI_DisplayStateMachine();
 void UI_DisplayExtEvent(UI_DISPLAY_EVENTS extEvent, Display * eventData);

@@ -5,7 +5,7 @@ void APP_Init()
 {
 	appData.entry_flag=1;
 	appData.relayState.relayByte=0;
-	APP_ChangeState(APP_STATE0_Playing,APP_STATE1_Reading_Preset,APP_STATE2_None);
+	APP_ChangeState(APP_STATE0_Playing,APP_STATE1_Setting_Up,APP_STATE2_None);
 }
 
 void APP_ChangeState(APP_STATES_LVL0 a, APP_STATES_LVL1 b, APP_STATES_LVL2 c)
@@ -25,7 +25,7 @@ void APP_Tasks()
 			{
 				case APP_STATE1_Setting_Up:
 				{
-					uint16_t gpioState;
+					//uint16_t gpioState;
 					if(appData.entry_flag)
 					{
 						//TODO: Pick relays from memory
@@ -35,13 +35,18 @@ void APP_Tasks()
 						appData.relayState.relay4 = 1;
 						appData.relayState.relay5 = 0;
 						appData.relayState.relay6 = 0;
+
+						GPIO_WriteBit(Relay_Port, Relay1_Pin, Bit_SET);
+						GPIO_WriteBit(Relay_Port, Relay2_Pin, Bit_SET);
+						GPIO_WriteBit(Relay_Port, Relay3_Pin, Bit_SET);
+						GPIO_WriteBit(Relay_Port, Relay4_Pin, Bit_SET);
+						GPIO_WriteBit(Relay_Port, Relay5_Pin, Bit_SET);
+						GPIO_WriteBit(Relay_Port, Relay6_Pin, Bit_SET);
 						
-						gpioState = GPIO_ReadOutputData(Relay_Port);
-						gpioState = gpioState ^ ((uint16_t)(appData.relayState.relayByte) << 9);
-						GPIO_Write(Relay_Port, gpioState);
-						
-						UI_DisplayEncoder(3,4,15,3,0,0,&(appData.displayState));
+						UI_DisplayEncoder(8,10,31,7,3,1,&(appData.displayState));
 						UI_DisplayExtEvent(UI_DISPLAY_SEND_INFO,&(appData.displayState));
+                        
+                        appData.entry_flag=0;
 					}
 				}
 				break;
