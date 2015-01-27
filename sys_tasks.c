@@ -2,6 +2,7 @@
 
 void SYS_Tasks()
 {
+	MEM_Tasks();
 	UI_Tasks();
 	APP_Tasks();
 }

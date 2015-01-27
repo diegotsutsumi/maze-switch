@@ -7,6 +7,7 @@
 #include "bsp_config.h"
 #include "user_interface.h"
 #include "app.h"
+#include "memory.h"
 
 void SYS_Initialize();
 void SYS_ClockInit();

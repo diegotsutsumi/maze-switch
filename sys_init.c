@@ -8,6 +8,7 @@ void SYS_Initialize()
 	SYS_NVICInit();
 	SYS_TimerInit();
 	
+	MEM_Init();
 	UI_Init();
 	APP_Init();
 	
