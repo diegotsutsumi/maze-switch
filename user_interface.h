@@ -181,6 +181,9 @@ void UI_ButtonsExtEvent(UI_BUTTON_EVENTS extEvent);
 
 void UI_DisplayInit();
 unsigned char UI_DisplayEncoder(unsigned char _7seg, unsigned char volume, unsigned char pedals, unsigned char foots, unsigned char bufferSwitches, unsigned char edit, Display * disp_out);
+void UI_DisplayUpdate(UI_DISPLAY_PARTS *part, Display *newDisp);
+void UI_DisplayRemoveWhichBlinks(UI_DISPLAY_PARTS *part, Display *customRemove);
+void UI_DisplayAddWhichBlinks(UI_DISPLAY_PARTS *part, Display *customAdd);
 void UI_DisplayStateMachine();
 void UI_DisplayExtEvent(UI_DISPLAY_EVENTS extEvent, void * eventData, void * eventData2);
 
