@@ -58,12 +58,13 @@ typedef struct
 {
 	unsigned char entry_flag;
 	Relays relayState;
-	Display displayState;
+	Display displayAux;
 	APP_State current_state;
 	unsigned char currentBank;
 }APP_Data;
 
 void APP_Init();
+void APP_UIBtnEventHandler(UI_BUTTON_ACTIONS event);
 void APP_ChangeState(APP_STATES_LVL0 a, APP_STATES_LVL1 b, APP_STATES_LVL2 c);
 void APP_Tasks();
 

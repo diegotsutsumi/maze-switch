@@ -4,9 +4,9 @@ APP_Data appData;
 void APP_Init()
 {
 	appData.entry_flag=1;
-	//TODO: LOAD last preset from FLASH into RAM (relayState + displayState + currentBank)
+	//TODO: LOAD last preset from FLASH into RAM (relayState + displayAux + currentBank)
 	
-	UI_DisplayEncoder(8,10,31,7,3,1,&(appData.displayState));//temporary
+	UI_DisplayEncoder(8,10,31,7,3,1,&(appData.displayAux));//temporary
 	
 	APP_ChangeState(APP_STATE0_Playing,APP_STATE1_Setting_Up,APP_STATE2_None);
 }
@@ -36,24 +36,36 @@ void APP_Tasks()
 					GPIO_WriteBit(Relay_Port, Relay5_Pin, (appData.relayState.relay5)?Bit_SET:Bit_RESET);
 					GPIO_WriteBit(Relay_Port, Relay6_Pin, (appData.relayState.relay6)?Bit_SET:Bit_RESET);
 					
-					UI_DisplayExtEvent(UI_DISPLAY_UPDATE,(void*)(&updatePart),(void*)(&(appData.displayState)));
-                       
+					UI_DisplayExtEvent(UI_DISPLAY_UPDATE,(void*)(&updatePart),(void*)(&(appData.displayAux)));
+					
 					appData.entry_flag=1;
 					APP_ChangeState(APP_STATE0_Playing,APP_STATE1_Idle,APP_STATE2_None);
 				}
 				break;
 				case APP_STATE1_Idle:
 				{
+					if(appData.entry_flag)
+					{
+						UI_ButtonsExtEvent(UI_BTN_RELEASE);
+					}
 				}
 				break;
 				case APP_STATE1_Reading_Preset:
 				{
-					//TODO: Load preset from FLASH into RAM (relayState + displayState)
+					//TODO: Load preset from FLASH into RAM (relayState + displayAux)
 				}
 				break;
 				case APP_STATE1_Bank_Updating:
 				{
-					
+					if(appData.entry_flag)
+					{
+						UI_DISPLAY_PARTS updatePart = UI_DISPLAY_7SEG;
+						UI_DisplayEncoder(appData.currentBank,0,0,0,0,0,&(appData.displayAux));//temporary
+						UI_DisplayExtEvent(UI_DISPLAY_UPDATE,(void*)(&updatePart),(void*)(&(appData.displayAux)));
+						
+						appData.entry_flag=1;
+						APP_ChangeState(APP_STATE0_Playing,APP_STATE1_Idle,APP_STATE2_None);
+					}
 				}
 				break;
 			}
@@ -99,57 +111,57 @@ void APP_Tasks()
 	}
 }
 
-void APP_UIEventHandler(UI_BUTTON_ACTIONS event)
+void APP_UIBtnEventHandler(UI_BUTTON_ACTIONS event)
 {
 	switch(event)
 	{
-		case FOOT_1_PRESSED:
+		case UI_BTN_FOOT_1_PRESSED:
 		{
 		}
 		break;
-		case FOOT_2_PRESSED:
+		case UI_BTN_FOOT_2_PRESSED:
 		{
 		}
 		break;
-		case FOOT_3_PRESSED:
+		case UI_BTN_FOOT_3_PRESSED:
 		{
 		}
 		break;
-		case FOOT_LEFT_PRESSED:
+		case UI_BTN_FOOT_LEFT_PRESSED:
 		{
-			if(current_state.lvl1==APP_STATE1_Idle && current_bank<9)
+			if(appData.current_state.lvl1==APP_STATE1_Idle && appData.currentBank<9)
 			{
-				current_bank++;
+				appData.currentBank++;
 				APP_ChangeState(APP_STATE0_Playing,APP_STATE1_Bank_Updating,APP_STATE2_None);
 			}
 		}
 		break;
-		case FOOT_RIGHT_PRESSED:
+		case UI_BTN_FOOT_RIGHT_PRESSED:
 		{
-			if(current_state.lvl1==APP_STATE1_Idle && current_bank>1)
+			if(appData.current_state.lvl1==APP_STATE1_Idle && appData.currentBank>1)
 			{
-				current_bank--;
+				appData.currentBank--;
 				APP_ChangeState(APP_STATE0_Playing,APP_STATE1_Bank_Updating,APP_STATE2_None);
 			}
 		}
 		break;
-		case BUFFER_SWITCHED_ON:
+		case UI_BTN_BUFFER_SWITCHED_ON:
 		{
 		}
 		break;
-		case BUFFER_SWITCHED_OFF:
+		case UI_BTN_BUFFER_SWITCHED_OFF:
 		{
 		}
 		break;
-		case SAVE_OK:
+		case UI_BTN_SAVE_OK:
 		{
 		}
 		break;
-		case SAVE_CANCEL:
+		case UI_BTN_SAVE_CANCEL:
 		{
 		}
 		break;
-		case ERROR:
+		case UI_BTN_ERROR:
 		{
 		}
 		break;

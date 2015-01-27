@@ -406,7 +406,7 @@ void UI_DisplayAddWhichBlinks(UI_DISPLAY_PARTS *part, Display *customAdd)
 	{
 		return;
 	}
-	switch(part)
+	switch(*part)
 	{
 		case UI_DISPLAY_ALL:
 		{
@@ -458,7 +458,7 @@ void UI_DisplayRemoveWhichBlinks(UI_DISPLAY_PARTS *part, Display *customRemove)
 	{
 		return;
 	}
-	switch(part)
+	switch(*part)
 	{
 		case UI_DISPLAY_ALL:
 		{
@@ -512,7 +512,7 @@ void UI_DisplayUpdate(UI_DISPLAY_PARTS *part, Display *newDisp)
 	{
 		return;
 	}
-	switch(part)
+	switch(*part)
 	{
 		case UI_DISPLAY_ALL:
 		{
