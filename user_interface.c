@@ -491,48 +491,108 @@ void UI_DisplayRemoveWhichBlinks(UI_DISPLAY_PARTS part, Display customRemove)
 	}
 }
 
+void UI_DisplayUpdate(UI_DISPLAY_PARTS part, Display newDisp)
+{
+	unsigned int mask;
+	switch(part)
+	{
+		case UI_DISPLAY_ALL:
+		{
+			mask = UI_DISP_ALL_MASK;
+		}
+		break;
+		case UI_DISPLAY_7SEG:
+		{
+			mask = UI_DISP_7SEG_MASK;
+		}
+		break;
+		case UI_DISPLAY_VOLUME:
+		{
+			mask = UI_DISP_VOL_MASK;
+		}
+		break;
+		case UI_DISPLAY_LEDPEDAL:
+		{
+			mask = UI_DISP_PEDAL_MASK;
+		}
+		break;
+		case UI_DISPLAY_LEDFOOT:
+		{
+			mask = UI_DISP_FOOT_MASK;
+		}
+		break;
+		case UI_DISPLAY_LEDBUFFER:
+		{
+			mask = UI_DISP_BUFFER_MASK;
+		}
+		break;
 
-void UI_DisplayExtEvent(UI_DISPLAY_EVENTS extEvent, void * eventData, void * eventData2)
+		default:
+		{
+			mask = 0;
+		}
+		break;
+	}
+
+	dispData.currentDisp.displayWord = ((newDisp.displayWord) & (mask)) | ((dispData.currentDisp.displayWord) & ~(mask));
+}
+
+void UI_DisplayExtEvent(UI_DISPLAY_EVENTS extEvent, void * eventData1, void * eventData2)
 {
 	switch(extEvent)
 	{
 		case UI_DISPLAY_UPDATE:
 		{
-			dispData.currentDisp.displayWord = ((Display)(*eventData)).displayWord;
-			dispData.bufferBlink.displayWord = dispData.currentDisp.displayWord;
-			dispData.bufferBlink.displayWord &= ~(dispData.whichBlinks.displayWord);
-			dispData.updatePending=1;
+			if(eventData1!=0 && eventData2!=0)
+			{
+				UI_DisplayUpdate(*((UI_DISPLAY_PARTS*)(eventData1)), *((Display*)(eventData2)));
+
+				dispData.bufferBlink.displayWord = dispData.currentDisp.displayWord;
+				dispData.bufferBlink.displayWord &= ~(dispData.whichBlinks.displayWord);
+				dispData.updatePending=1;
+			}
 		}
 		break;
 		
 		case UI_DISPLAY_START_BLINKING:
 		{
-			if(!dispData.blinkTimerEnabled)
+			if(eventData1!=0)
 			{
-				dispData.blinkTimer=0;
-				dispData.blinkTimerEnabled=1;
+				if(!dispData.blinkTimerEnabled)
+				{
+					dispData.blinkTimer=0;
+					dispData.blinkTimerEnabled=1;
+				}
+
+				Display aux;
+				aux.displayWord = (eventData2)?*((Display*)(eventData2)).displayWord:0;
+
+				UI_DisplayAddWhichBlinks(*((UI_DISPLAY_PARTS*)(eventData1)), aux);
+				dispData.bufferBlink.displayWord = dispData.currentDisp.displayWord;
+				dispData.bufferBlink.displayWord &= ~(dispData.whichBlinks.displayWord);
 			}
-			
-			UI_DisplayAddWhichBlinks((UI_DISPLAY_PARTS)(*eventData), (Display)(*eventData2));
-			dispData.bufferBlink.displayWord = dispData.currentDisp.displayWord;
-			dispData.bufferBlink.displayWord &= ~(dispData.whichBlinks.displayWord);
 		}
 		break;
 		
 		case UI_DISPLAY_STOP_BLINKING:
 		{
-			if(dispData.blinkTimerEnabled)
+			if(eventData1!=0)
 			{
-				if(((UI_DISPLAY_PARTS)(*eventData)==UI_DISPLAY_ALL) ||
-					((eventData2)?1:0 && ((Display)(*eventData2).displayWord==0xFFFFFFF)))
+				if(dispData.blinkTimerEnabled)
 				{
-					dispData.blinkTimerEnabled=0;
-					dispData.blinkTimer=0;
+					if((*((UI_DISPLAY_PARTS*)(eventData1))==UI_DISPLAY_ALL) || (eventData2)?((*((Display*)(eventData2)).displayWord==0xFFFFFFF)?1:0):0)
+					{
+						dispData.blinkTimerEnabled=0;
+						dispData.blinkTimer=0;
+					}
+
+					Display aux;
+					aux.displayWord = (eventData2)?*((Display*)(eventData2)).displayWord:0;
+
+					UI_DisplayRemoveWhichBlinks(*((UI_DISPLAY_PARTS*)(eventData1)), aux.displayWord);
+					dispData.bufferBlink.displayWord = dispData.currentDisp.displayWord;
+					dispData.bufferBlink.displayWord &= ~(dispData.whichBlinks.displayWord);
 				}
-				
-				UI_DisplayRemoveWhichBlinks((UI_DISPLAY_PARTS)(*eventData), (Display)(*eventData2));
-				dispData.bufferBlink.displayWord = dispData.currentDisp.displayWord;
-				dispData.bufferBlink.displayWord &= ~(dispData.whichBlinks.displayWord);
 			}
 		}
 		break;

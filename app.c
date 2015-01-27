@@ -6,6 +6,8 @@ void APP_Init()
 	appData.entry_flag=1;
 	//TODO: LOAD last preset from FLASH into RAM (relayState + displayState + currentBank)
 	
+	UI_DisplayEncoder(8,10,31,7,3,1,&(appData.displayState));//temporary
+	
 	APP_ChangeState(APP_STATE0_Playing,APP_STATE1_Setting_Up,APP_STATE2_None);
 }
 
@@ -26,6 +28,7 @@ void APP_Tasks()
 			{
 				case APP_STATE1_Setting_Up:
 				{
+					UI_DISPLAY_PARTS updatePart = UI_DISPLAY_ALL;
 					GPIO_WriteBit(Relay_Port, Relay1_Pin, (appData.relayState.relay1)?Bit_SET:Bit_RESET);
 					GPIO_WriteBit(Relay_Port, Relay2_Pin, (appData.relayState.relay2)?Bit_SET:Bit_RESET);
 					GPIO_WriteBit(Relay_Port, Relay3_Pin, (appData.relayState.relay3)?Bit_SET:Bit_RESET);
@@ -33,8 +36,7 @@ void APP_Tasks()
 					GPIO_WriteBit(Relay_Port, Relay5_Pin, (appData.relayState.relay5)?Bit_SET:Bit_RESET);
 					GPIO_WriteBit(Relay_Port, Relay6_Pin, (appData.relayState.relay6)?Bit_SET:Bit_RESET);
 					
-					//UI_DisplayEncoder(8,10,31,7,3,1,&(appData.displayState));
-					UI_DisplayExtEvent(UI_DISPLAY_UPDATE,&(appData.displayState),(void*)0, (void*)0);
+					UI_DisplayExtEvent(UI_DISPLAY_UPDATE,(void*)(&updatePart),(void*)(&(appData.displayState)));
                        
 					appData.entry_flag=1;
 					APP_ChangeState(APP_STATE0_Playing,APP_STATE1_Idle,APP_STATE2_None);
