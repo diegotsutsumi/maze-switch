@@ -32,6 +32,15 @@ typedef enum
 	MEM_EVENT_SaveActive,
 }MEM_EVENTS;
 
+typedef enum
+{
+	MEM_ACTION_FlashReady,
+	MEM_ACTION_SavingComplete,
+	MEM_ACTION_Error
+}MEM_ACTIONS;
+
+typedef void (*MEM_ActionHandler)(MEM_ACTIONS action);
+
 typedef union
 {
 	struct
@@ -74,6 +83,8 @@ typedef struct
 	unsigned char entryFlag;
 	
 	unsigned int addrCount;
+
+	MEM_ActionHandler handler;
 	
 }MEM_Data;
 
@@ -83,6 +94,7 @@ void MEM_ExternalEvent(MEM_EVENTS extEvent, void * eventData);
 int MEM_GetIndex(unsigned char bank, unsigned char preset);
 unsigned int MEM_GetAddress(int index);
 void MEM_ChangeState(MEM_STATES_LVL0 a, MEM_STATES_LVL1 b);
+void MEM_SetActionHandler(MEM_ActionHandler handler);
 void MEM_Tasks(MEM_STATES_LVL0 a, MEM_STATES_LVL1 b);
 
 

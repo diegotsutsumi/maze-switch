@@ -20,22 +20,45 @@ void MEM_Init()
 
 void MEM_ExternalEvent(MEM_EVENTS extEvent, void * eventData)
 {
+	if(!eventData)
+	{
+		return;
+	}
+	if(*((MemorySlot*)eventData).Bank>9 || *((MemorySlot*)eventData).Bank==0 ||
+		*((MemorySlot*)eventData).Preset==0)
+	{
+		return;
+	}
 	switch(extEvent)
 	{
 		case MEM_EVENT_SavePreset:
 		{
+			int idx;
 			if(memData.currentState.lvl0==MEM_STATE0_Idle)
 			{
-				//TODO: Update Mirror to be saved back into Flash
+				idx = MEM_GetIndex((*(MemorySlot*)(eventData)).Bank, *((MemorySlot*)(eventData)).Preset)
+				if(idx==-1)
+				{
+					return;
+				}
+				memData.flashMirror[idx].memoryHWord = (*(MemorySlot*)(eventData)).memoryHWord;
+				MEM_ChangeState(MEM_STATE0_Saving,MEM_STATE1_ErasingPage);
 			}
 		}
 		break;
 		
-		case MEM_EVENT_SaveActive:
+		case MEM_EVENT_SaveActive: //Checking just bank and preset from outside
 		{
 			if(memData.currentState.lvl0==MEM_STATE0_Idle)
 			{
-				memData.flashMirror[0].memoryHWord = *((MemorySlot*)eventData).memoryHWord;
+				int idx;
+				idx = MEM_GetIndex((*(MemorySlot*)(eventData)).Bank, *((MemorySlot*)(eventData)).Preset)
+				if(idx==-1)
+				{
+					return;
+				}
+
+				memData.flashMirror[0].memoryHWord = memData.flashMirror[idx].memoryHWord;
 				MEM_ChangeState(MEM_STATE0_Saving,MEM_STATE1_ErasingPage);
 			}
 		}
@@ -69,7 +92,25 @@ void MEM_ChangeState(MEM_STATES_LVL0 a, MEM_STATES_LVL1 b)
 	memData.currentState.lvl1 = b;
 }
 
+unsigned char MEM_GetPreset(unsigned char bank, unsigned char preset, MemorySlot * out)
+{
+	int idx = MEM_GetIndex(bank, preset);
+	if(idx=-1)
+	{
+		return 0;
+	}
 
+	*(out).memoryHWord = memData.flashMirror[idx].memoryHWord;
+	return 1;
+}
+
+void MEM_SetActionHandler(MEM_SetActionHandler _handler)
+{
+	if(!_handler)
+	{
+		memData.handler = _handler;
+	}
+}
 
 void MEM_Tasks()
 {
@@ -85,7 +126,7 @@ void MEM_Tasks()
 			else
 			{
 				MEM_ChangeState(MEM_STATE0_Idle,MEM_STATE1_None);
-				//TODO: Generate event to APP, telling flash upload is ready
+				memData.handler(MEM_ACTION_FlashReady);
 			}
 		}
 		break;
@@ -119,6 +160,7 @@ void MEM_Tasks()
 							memData.addrCount=0;
 							memData.setReset=1;
 							MEM_ChangeState(MEM_STATE0_SavingActive,MEM_STATE1_ProgrammingPage);
+							memData.handler(MEM_ACTION_SavingComplete);
 						}
 					}
 					else
@@ -150,6 +192,7 @@ void MEM_Tasks()
 							{
 								memData.entryFlag=1;
 								MEM_ChangeState(MEM_STATE0_Idle,MEM_STATE1_None);
+								memData.handler(MEM_ACTION_SavingComplete);
 							}
 						}
 					}
@@ -173,7 +216,11 @@ void MEM_Tasks()
 
 		case MEM_STATE0_Error:
 		{
-
+			if(memData.entryFlag)
+			{
+				memData.handler(MEM_ACTION_Error);
+				memData.entryFlag=0;
+			}
 		}
 		break;
 
