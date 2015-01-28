@@ -24,8 +24,8 @@ void MEM_ExternalEvent(MEM_EVENTS extEvent, void * eventData)
 	{
 		return;
 	}
-	if(*((MemorySlot*)eventData).Bank>9 || *((MemorySlot*)eventData).Bank==0 ||
-		*((MemorySlot*)eventData).Preset==0)
+	if((*(MemorySlot*)eventData).Bank>9 || (*(MemorySlot*)eventData).Bank==0 ||
+		(*(MemorySlot*)eventData).Preset==0)
 	{
 		return;
 	}
@@ -36,7 +36,7 @@ void MEM_ExternalEvent(MEM_EVENTS extEvent, void * eventData)
 			int idx;
 			if(memData.currentState.lvl0==MEM_STATE0_Idle)
 			{
-				idx = MEM_GetIndex((*(MemorySlot*)(eventData)).Bank, *((MemorySlot*)(eventData)).Preset)
+				idx = MEM_GetIndex((*(MemorySlot*)(eventData)).Bank, (*(MemorySlot*)(eventData)).Preset)
 				if(idx==-1)
 				{
 					return;
@@ -52,7 +52,7 @@ void MEM_ExternalEvent(MEM_EVENTS extEvent, void * eventData)
 			if(memData.currentState.lvl0==MEM_STATE0_Idle)
 			{
 				int idx;
-				idx = MEM_GetIndex((*(MemorySlot*)(eventData)).Bank, *((MemorySlot*)(eventData)).Preset)
+				idx = MEM_GetIndex((*(MemorySlot*)(eventData)).Bank, (*(MemorySlot*)(eventData)).Preset)
 				if(idx==-1)
 				{
 					return;
@@ -100,7 +100,7 @@ unsigned char MEM_GetPreset(unsigned char bank, unsigned char preset, MemorySlot
 		return 0;
 	}
 
-	*(out).memoryHWord = memData.flashMirror[idx].memoryHWord;
+	(*out).memoryHWord = memData.flashMirror[idx].memoryHWord;
 	return 1;
 }
 
@@ -180,7 +180,7 @@ void MEM_Tasks()
 						if(memData.setReset)
 						{
 							FLASH->CR |= CR_PG_Set;
-							*(__IO uint16_t*)(MEM_GetAddress(memData.addrCount)) = memData.flashMirror[memData.addrCount];
+							*((__IO uint16_t*)(MEM_GetAddress(memData.addrCount))) = memData.flashMirror[memData.addrCount];
 							memData.setReset=0;
 						}
 						else
