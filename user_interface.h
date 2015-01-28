@@ -14,6 +14,7 @@
 #define UI_DISP_PEDAL_MASK 0xF4
 #define UI_DISP_FOOT_MASK 0x80808
 #define UI_DISP_BUFFER_MASK 0x3
+#define UI_DISP_EDIT_MASK 0x8000000
 
 typedef enum
 {
@@ -85,6 +86,7 @@ typedef enum
 	UI_DISPLAY_LEDPEDAL,
 	UI_DISPLAY_LEDFOOT,
 	UI_DISPLAY_LEDBUFFER,
+	UI_DISPLAY_LEDEDIT,
 	UI_DISPLAY_CUSTOM
 }UI_DISPLAY_PARTS;
 
@@ -180,7 +182,17 @@ void UI_ButtonsStateMachine();
 void UI_ButtonsExtEvent(UI_BUTTON_EVENTS extEvent);
 
 void UI_DisplayInit();
+
+unsigned char UI_7SegBitEncoder(unsigned char number, Display * disp_out);
+unsigned char UI_7SegDispEncoder(unsigned char number, Display * disp_out);
+unsigned char UI_VolumeBitEncoder(unsigned short number, Display * disp_out);
+unsigned char UI_VolumeDispEncoder(unsigned char number, Display * disp_out);
+unsigned char UI_PedalBitEncoder(unsigned char number, Display * disp_out);
+unsigned char UI_FootBitEncoder(unsigned char number, Display * disp_out);
+unsigned char UI_BufferBitEncoder(unsigned char number, Display * disp_out);
+unsigned char UI_EditBitEncoder(unsigned char number, Display * disp_out);
 unsigned char UI_DisplayEncoder(unsigned char _7seg, unsigned char volume, unsigned char pedals, unsigned char foots, unsigned char bufferSwitches, unsigned char edit, Display * disp_out);
+
 void UI_DisplayUpdate(UI_DISPLAY_PARTS *part, Display *newDisp);
 void UI_DisplayRemoveWhichBlinks(UI_DISPLAY_PARTS *part, Display *customRemove);
 void UI_DisplayAddWhichBlinks(UI_DISPLAY_PARTS *part, Display *customAdd);

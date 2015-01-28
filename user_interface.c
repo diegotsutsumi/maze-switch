@@ -182,100 +182,193 @@ void UI_ButtonsExtEvent(UI_BUTTON_EVENTS extEvent)
 	}
 }
 
-unsigned char UI_DisplayEncoder(unsigned char _7seg, unsigned char volume, unsigned char pedals,
-							unsigned char foots, unsigned char bufferSwitches, unsigned char edit, Display * disp_out)
+unsigned char UI_7SegBitEncoder(unsigned char number, Display * disp_out)
 {
-	(*disp_out).displayWord=0;
-	if(_7seg>9 || (volume>10) || pedals>31 || foots>7 || bufferSwitches>3 || edit>1)
+	if(number>127 || disp_out==0)
 	{
 		return 0;
 	}
 	
-	if(_7seg!=1 && _7seg!=4)
+	(*disp_out)._7SegUp=(number & (0x01 << 0))?1:0;
+	(*disp_out)._7SegRightUp=(number & (0x01 << 1))?1:0;
+	(*disp_out)._7SegRightDown=(number & (0x01 << 2))?1:0;
+	(*disp_out)._7SegDown=(number & (0x01 << 3))?1:0;
+	(*disp_out)._7SegLeftDown=(number & (0x01 << 4))?1:0;
+	(*disp_out)._7SegLeftUp=(number & (0x01 << 5))?1:0;
+	(*disp_out)._7SegMiddle=(number & (0x01 << 6))?1:0;
+	
+	return 1;
+}
+
+unsigned char UI_7SegDispEncoder(unsigned char number, Display * disp_out)
+{
+	if(number>9 || disp_out==0)
+	{
+		return 0;
+	}
+	
+	if(number!=1 && number!=4)
 	{
 		(*disp_out)._7SegUp=1;
 	}
-	if(_7seg!=0 && _7seg!=1 && _7seg!=7)
+	if(number!=0 && number!=1 && number!=7)
 	{
 		(*disp_out)._7SegMiddle=1;
 	}
-	if(_7seg!=1 && _7seg!=4 && _7seg!=7)
+	if(number!=1 && number!=4 && number!=7)
 	{
 		(*disp_out)._7SegDown=1;
 	}
-	if(_7seg!=1 && _7seg!=2 && _7seg!=3 && _7seg!=7)
+	if(number!=1 && number!=2 && number!=3 && number!=7)
 	{
 		(*disp_out)._7SegLeftUp=1;
 	}
-	if(_7seg==0 || _7seg==2 || _7seg==6 || _7seg==8)
+	if(number==0 || number==2 || number==6 || number==8)
 	{
 		(*disp_out)._7SegLeftDown=1;
 	}
-	if(_7seg!=5 && _7seg!=6)
+	if(number!=5 && number!=6)
 	{
 		(*disp_out)._7SegRightUp=1;
 	}
-	if(_7seg!=2)
+	if(number!=2)
 	{
 		(*disp_out)._7SegRightDown=1;
 	}
+	return 1;
+}
+unsigned char UI_VolumeBitEncoder(unsigned short number, Display * disp_out)
+{
+	if(number>1023 || disp_out==0)
+	{
+		return 0;
+	}
 	
-	if(volume>0)
+	(*disp_out).VolumeBar1=(number & (0x01 << 0))?1:0;
+	(*disp_out).VolumeBar2=(number & (0x01 << 1))?1:0;
+	(*disp_out).VolumeBar3=(number & (0x01 << 2))?1:0;
+	(*disp_out).VolumeBar4=(number & (0x01 << 3))?1:0;
+	(*disp_out).VolumeBar5=(number & (0x01 << 4))?1:0;
+	(*disp_out).VolumeBar6=(number & (0x01 << 5))?1:0;
+	(*disp_out).VolumeBar7=(number & (0x01 << 6))?1:0;
+	(*disp_out).VolumeBar8=(number & (0x01 << 7))?1:0;
+	(*disp_out).VolumeBar9=(number & (0x01 << 8))?1:0;
+	(*disp_out).VolumeBar10=(number & (0x01 << 9))?1:0;
+	
+	return 1;
+}
+
+unsigned char UI_VolumeDispEncoder(unsigned char number, Display * disp_out)
+{
+	if(number>10 || disp_out==0)
+	{
+		return 0;
+	}
+	
+	if(number>0)
 	{
 		(*disp_out).VolumeBar1=1;
 	}
-	if(volume>1)
+	if(number>1)
 	{
 		(*disp_out).VolumeBar2=1;
 	}
-	if(volume>2)
+	if(number>2)
 	{
 		(*disp_out).VolumeBar3=1;
 	}
-	if(volume>3)
+	if(number>3)
 	{
 		(*disp_out).VolumeBar4=1;
 	}
-	if(volume>4)
+	if(number>4)
 	{
 		(*disp_out).VolumeBar5=1;
 	}
-	if(volume>5)
+	if(number>5)
 	{
 		(*disp_out).VolumeBar6=1;
 	}
-	if(volume>6)
+	if(number>6)
 	{
 		(*disp_out).VolumeBar7=1;
 	}
-	if(volume>7)
+	if(number>7)
 	{
 		(*disp_out).VolumeBar8=1;
 	}
-	if(volume>8)
+	if(number>8)
 	{
 		(*disp_out).VolumeBar9=1;
 	}
-	if(volume>9)
+	if(number>9)
 	{
 		(*disp_out).VolumeBar10=1;
 	}
 	
-	(*disp_out).LEDPedal1=(pedals & (0x01 << 0))?1:0;
-	(*disp_out).LEDPedal2=(pedals & (0x01 << 1))?1:0;
-	(*disp_out).LEDPedal3=(pedals & (0x01 << 2))?1:0;
-	(*disp_out).LEDPedal4=(pedals & (0x01 << 3))?1:0;
-	(*disp_out).LEDPedal5=(pedals & (0x01 << 4))?1:0;
-	
-	(*disp_out).LEDFoot1=(foots & (0x01 << 0))?1:0;
-	(*disp_out).LEDFoot2=(foots & (0x01 << 1))?1:0;
-	(*disp_out).LEDFoot3=(foots & (0x01 << 2))?1:0;
-	
-	(*disp_out).LEDBuffer=(bufferSwitches & (0x01 << 0))?1:0;
-	(*disp_out).LEDSwBuffer=(bufferSwitches & (0x01 << 1))?1:0;
-	
-	(*disp_out).LEDEdit=edit;
 	return 1;
+}
+
+unsigned char UI_PedalBitEncoder(unsigned char number, Display * disp_out)
+{
+	if(number>31 || disp_out==0)
+	{
+		return 0;
+	}
+	(*disp_out).LEDPedal1=(number & (0x01 << 0))?1:0;
+	(*disp_out).LEDPedal2=(number & (0x01 << 1))?1:0;
+	(*disp_out).LEDPedal3=(number & (0x01 << 2))?1:0;
+	(*disp_out).LEDPedal4=(number & (0x01 << 3))?1:0;
+	(*disp_out).LEDPedal5=(number & (0x01 << 4))?1:0;
+	return 1;
+}
+
+unsigned char UI_FootBitEncoder(unsigned char number, Display * disp_out)
+{
+	if(number>7 || disp_out==0)
+	{
+		return 0;
+	}
+	(*disp_out).LEDFoot1=(number & (0x01 << 0))?1:0;
+	(*disp_out).LEDFoot2=(number & (0x01 << 1))?1:0;
+	(*disp_out).LEDFoot3=(number & (0x01 << 2))?1:0;
+	return 1;
+}
+
+unsigned char UI_BufferBitEncoder(unsigned char number, Display * disp_out)
+{
+	if(number>3 || disp_out==0)
+	{
+		return 0;
+	}
+	(*disp_out).LEDSwBuffer=(number & (0x01 << 0))?1:0;
+	(*disp_out).LEDBuffer=(number & (0x01 << 1))?1:0;
+	return 1;
+}
+
+unsigned char UI_EditBitEncoder(unsigned char number, Display * disp_out)
+{
+	if(number>1 || disp_out==0)
+	{
+		return 0;
+	}
+	(*disp_out).LEDEdit=(number & (0x01 << 0))?1:0;
+	return 1;
+}
+
+unsigned char UI_DisplayEncoder(unsigned char _7seg, unsigned char volume, unsigned char pedals,
+							unsigned char foots, unsigned char bufferSwitches, unsigned char edit, Display * disp_out)
+{
+	if(UI_7SegDispEncoder(_7seg,disp_out) && UI_VolumeDispEncoder(volume,disp_out) &&
+		UI_PedalBitEncoder(pedals,disp_out) && UI_FootBitEncoder(foots,disp_out) &&
+		UI_BufferBitEncoder(bufferSwitches,disp_out) && UI_EditBitEncoder(edit,disp_out))
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 void UI_DisplayInit()
@@ -307,10 +400,10 @@ void UI_DisplayStateMachine()
 			if(dispData.updatePending)
 			{
 				dispData.updatePending=0;
-				dispData.bufferOut.displayWord = dispData.currentDisp.displayWord;
-				
+
 				if(!dispData.blinkTimerEnabled)
 				{
+					dispData.bufferOut.displayWord = dispData.currentDisp.displayWord;
 					dispData.currentState=UI_DISP_STATE_SendingInfo;
 				}
 			}
@@ -438,6 +531,11 @@ void UI_DisplayAddWhichBlinks(UI_DISPLAY_PARTS *part, Display *customAdd)
 			dispData.whichBlinks.displayWord|=UI_DISP_BUFFER_MASK;
 		}
 		break;
+		case UI_DISPLAY_LEDEDIT:
+		{
+			dispData.whichBlinks.displayWord|=UI_DISP_EDIT_MASK;
+		}
+		break;
 		case UI_DISPLAY_CUSTOM:
 		{
 			if(customAdd!=0)
@@ -490,11 +588,16 @@ void UI_DisplayRemoveWhichBlinks(UI_DISPLAY_PARTS *part, Display *customRemove)
 			dispData.whichBlinks.displayWord&=~(UI_DISP_BUFFER_MASK);
 		}
 		break;
+		case UI_DISPLAY_LEDEDIT:
+		{
+			dispData.whichBlinks.displayWord&=~(UI_DISP_EDIT_MASK);
+		}
+		break;
 		case UI_DISPLAY_CUSTOM:
 		{
 			if(customRemove!=0)
 			{
-				dispData.whichBlinks.displayWord&=~(*(customRemove).displayWord);
+				dispData.whichBlinks.displayWord&=~(*customRemove).displayWord;
 			}
 		}
 		break;
@@ -508,7 +611,7 @@ void UI_DisplayRemoveWhichBlinks(UI_DISPLAY_PARTS *part, Display *customRemove)
 void UI_DisplayUpdate(UI_DISPLAY_PARTS *part, Display *newDisp)
 {
 	unsigned int mask;
-	if(part==0 || newDisp=0)
+	if(part==0 || newDisp==0)
 	{
 		return;
 	}
@@ -544,7 +647,11 @@ void UI_DisplayUpdate(UI_DISPLAY_PARTS *part, Display *newDisp)
 			mask = UI_DISP_BUFFER_MASK;
 		}
 		break;
-
+		case UI_DISPLAY_LEDEDIT:
+		{
+			mask = UI_DISP_EDIT_MASK;
+		}
+		break;
 		default:
 		{
 			mask = 0;
@@ -576,15 +683,15 @@ void UI_DisplayExtEvent(UI_DISPLAY_EVENTS extEvent, void * eventData1, void * ev
 		{
 			if(eventData1!=0)
 			{
-				if(!dispData.blinkTimerEnabled)
+				UI_DisplayAddWhichBlinks((UI_DISPLAY_PARTS*)(eventData1), (Display*)(eventData2));
+				dispData.bufferBlink.displayWord = dispData.currentDisp.displayWord;
+				dispData.bufferBlink.displayWord &= ~(dispData.whichBlinks.displayWord);
+				
+				if((!dispData.blinkTimerEnabled) && (dispData.whichBlinks.displayWord != 0))
 				{
 					dispData.blinkTimer=0;
 					dispData.blinkTimerEnabled=1;
 				}
-
-				UI_DisplayAddWhichBlinks((UI_DISPLAY_PARTS*)(eventData1), (Display*)(eventData2));
-				dispData.bufferBlink.displayWord = dispData.currentDisp.displayWord;
-				dispData.bufferBlink.displayWord &= ~(dispData.whichBlinks.displayWord);
 			}
 		}
 		break;
@@ -595,15 +702,15 @@ void UI_DisplayExtEvent(UI_DISPLAY_EVENTS extEvent, void * eventData1, void * ev
 			{
 				if(dispData.blinkTimerEnabled)
 				{
-					if((*((UI_DISPLAY_PARTS*)(eventData1))==UI_DISPLAY_ALL) || (eventData2)?((*((Display*)(eventData2)).displayWord==0xFFFFFFF)?1:0):0)
-					{
-						dispData.blinkTimerEnabled=0;
-						dispData.blinkTimer=0;
-					}
-
 					UI_DisplayRemoveWhichBlinks((UI_DISPLAY_PARTS*)(eventData1), (Display*)(eventData2));
 					dispData.bufferBlink.displayWord = dispData.currentDisp.displayWord;
 					dispData.bufferBlink.displayWord &= ~(dispData.whichBlinks.displayWord);
+
+					if(dispData.whichBlinks.displayWord == 0)
+					{
+						dispData.blinkTimer=0;
+						dispData.blinkTimerEnabled=0;
+					}
 				}
 			}
 		}
