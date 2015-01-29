@@ -4,6 +4,7 @@
 #include "stm32f10x_flash.h"
 
 #define FLASH_LAST_PAGE 0x0801FC00 //For STM32F103C8T6
+#define VOLUME_ZERO_GAIN 5
 
 typedef enum
 {
@@ -45,24 +46,24 @@ typedef union
 {
 	struct
 	{
-		unsigned short Bank:5;
-		unsigned short Preset:2;
-
 		unsigned short Volume:4;
 		
-		unsigned short Relay1:1;
-		unsigned short Relay2:1;
-		unsigned short Relay3:1;
-		unsigned short Relay4:1;
+		unsigned short Relay6:1;
 		unsigned short Relay5:1;
+		unsigned short Relay4:1;
+		unsigned short Relay3:1;
+		unsigned short Relay2:1;
+		unsigned short Relay1:1;
+
+		unsigned short SlotWritten:1;
 	};
 	struct
 	{
-		unsigned short AddressChunk:7
-
 		unsigned short :4;
 
-		unsigned short RelayChunk:5;
+		unsigned short RelayChunk:6;
+
+		unsigned short SlotWritten:1;
 	};
 	struct
 	{
@@ -75,7 +76,6 @@ typedef struct
 	MEM_STATES currentState;
 	MemorySlot slotToWrite;
 	MemorySlot flashMirror[512];
-	unsigned short usedSlotsNumber;
 	
 	FLASH_Status hwStatus;
 	

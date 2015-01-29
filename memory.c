@@ -13,22 +13,12 @@ void MEM_Init()
 		memData.flashMirror[i].memoryHWord=0;
 	}
 
-	memData.usedSlotsNumber=0;
 	memData.entryFlag=0;
 	MEM_ChangeState(MEM_STATE0_FetchingFlash,MEM_STATE1_None);
 }
 
-void MEM_ExternalEvent(MEM_EVENTS extEvent, void * eventData)
+void MEM_ExternalEvent(MEM_EVENTS extEvent, unsigned char bank, unsigned char preset, MemorySlot * data)
 {
-	if(!eventData)
-	{
-		return;
-	}
-	if((*(MemorySlot*)eventData).Bank>9 || (*(MemorySlot*)eventData).Bank==0 ||
-		(*(MemorySlot*)eventData).Preset==0)
-	{
-		return;
-	}
 	switch(extEvent)
 	{
 		case MEM_EVENT_SavePreset:
@@ -36,30 +26,51 @@ void MEM_ExternalEvent(MEM_EVENTS extEvent, void * eventData)
 			int idx;
 			if(memData.currentState.lvl0==MEM_STATE0_Idle)
 			{
-				idx = MEM_GetIndex((*(MemorySlot*)(eventData)).Bank, (*(MemorySlot*)(eventData)).Preset)
-				if(idx==-1)
+				idx = MEM_GetIndex(bank, preset);
+				if(idx==-1 || data==0)
 				{
 					return;
 				}
-				memData.flashMirror[idx].memoryHWord = (*(MemorySlot*)(eventData)).memoryHWord;
-				MEM_ChangeState(MEM_STATE0_Saving,MEM_STATE1_ErasingPage);
+
+				if((*eventData).Volume==VOLUME_ZERO_GAIN && (*eventData).RelayChunk==0)
+				{
+					memData.flashMirror[idx].Volume=VOLUME_ZERO_GAIN;
+					memData.flashMirror[idx].RelayChunk=0;
+					memData.flashMirror[idx].SlotWritten=0;
+					MEM_ChangeState(MEM_STATE0_Saving,MEM_STATE1_ErasingPage);
+				}
+				else
+				{
+					memData.flashMirror[idx].memoryHWord = (*eventData).memoryHWord;
+					MEM_ChangeState(MEM_STATE0_Saving,MEM_STATE1_ErasingPage);
+				}
 			}
 		}
 		break;
 		
-		case MEM_EVENT_SaveActive: //Checking just bank and preset from outside
+		case MEM_EVENT_SaveActive:
 		{
 			if(memData.currentState.lvl0==MEM_STATE0_Idle)
 			{
 				int idx;
-				idx = MEM_GetIndex((*(MemorySlot*)(eventData)).Bank, (*(MemorySlot*)(eventData)).Preset)
+				idx = MEM_GetIndex(bank, preset);
 				if(idx==-1)
 				{
 					return;
 				}
 
-				memData.flashMirror[0].memoryHWord = memData.flashMirror[idx].memoryHWord;
-				MEM_ChangeState(MEM_STATE0_Saving,MEM_STATE1_ErasingPage);
+				if(memData.flashMirror[idx].SlotWritten)
+				{
+					memData.flashMirror[0].memoryHWord = memData.flashMirror[idx].memoryHWord;
+					MEM_ChangeState(MEM_STATE0_Saving,MEM_STATE1_ErasingPage);	
+				}
+				else
+				{
+					memData.flashMirror[0].Volume=VOLUME_ZERO_GAIN;
+					memData.flashMirror[0].RelayChunk=0;
+					memData.flashMirror[0].SlotWritten=1;
+					MEM_ChangeState(MEM_STATE0_Saving,MEM_STATE1_ErasingPage);
+				}
 			}
 		}
 		break;
@@ -100,7 +111,15 @@ unsigned char MEM_GetPreset(unsigned char bank, unsigned char preset, MemorySlot
 		return 0;
 	}
 
-	(*out).memoryHWord = memData.flashMirror[idx].memoryHWord;
+	if(memData.flashMirror[idx].SlotWritten)
+	{
+		(*out).memoryHWord = memData.flashMirror[idx].memoryHWord;
+	}
+	else
+	{
+		(*out).memoryHWord = memData.flashMirror[511].memoryHWord; //The last position is the default preset (all relays off)
+	}
+
 	return 1;
 }
 
