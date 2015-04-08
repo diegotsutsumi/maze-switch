@@ -63,7 +63,7 @@ typedef union
 
 		unsigned short RelayChunk:6;
 
-		unsigned short SlotWritten:1;
+		unsigned short :1;
 	};
 	struct
 	{
@@ -73,7 +73,7 @@ typedef union
 
 typedef struct
 {
-	MEM_STATES currentState;
+	MEM_STATE currentState;
 	MemorySlot slotToWrite;
 	MemorySlot flashMirror[512];
 	
@@ -90,12 +90,12 @@ typedef struct
 
 
 void MEM_Init();
-void MEM_ExternalEvent(MEM_EVENTS extEvent, void * eventData);
+void MEM_ExternalEvent(MEM_EVENTS extEvent, unsigned char bank, unsigned char preset, MemorySlot * data);
 int MEM_GetIndex(unsigned char bank, unsigned char preset);
 unsigned int MEM_GetAddress(int index);
 void MEM_ChangeState(MEM_STATES_LVL0 a, MEM_STATES_LVL1 b);
 void MEM_SetActionHandler(MEM_ActionHandler handler);
-void MEM_Tasks(MEM_STATES_LVL0 a, MEM_STATES_LVL1 b);
+void MEM_Tasks();
 
 
 #endif

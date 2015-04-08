@@ -1918,6 +1918,9 @@
         <name>$PROJ_DIR$\core_cm3.h</name>
       </file>
       <file>
+        <name>$PROJ_DIR$\misc.h</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\stm32f10x.h</name>
       </file>
       <file>
@@ -1940,6 +1943,9 @@
       <name>src</name>
       <file>
         <name>$PROJ_DIR$\core_cm3.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\misc.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$\stm32f10x_flash.c</name>

@@ -38,6 +38,7 @@ typedef enum
 
 typedef enum
 {
+	UI_BTN_STATE_Init,
 	UI_BTN_STATE_ListeningButtons,
 	UI_BTN_STATE_Debouncing,
 	UI_BTN_STATE_WaitingRelease,
@@ -68,7 +69,7 @@ typedef struct
 	UI_BUTTON_STATES currentState;
 	Switches switchesState;
 	Switches switchesNewState;
-	unsigned char editButton
+	unsigned char editButton;
 	UI_ActionHandler actionHandler;
 	unsigned short timerDebounce;
 	unsigned int editTimer;

@@ -129,7 +129,7 @@ void APP_UIBtnEventHandler(UI_BUTTON_ACTIONS event)
 		break;
 		case UI_BTN_FOOT_LEFT_PRESSED:
 		{
-			if(appData.current_state.lvl1==APP_STATE0_Playing && 
+			if(appData.current_state.lvl0==APP_STATE0_Playing && 
 				appData.current_state.lvl1==APP_STATE1_Idle && appData.currentBank<9)
 			{
 				appData.currentBank++;
@@ -139,7 +139,7 @@ void APP_UIBtnEventHandler(UI_BUTTON_ACTIONS event)
 		break;
 		case UI_BTN_FOOT_RIGHT_PRESSED:
 		{
-			if(appData.current_state.lvl1==APP_STATE0_Playing &&
+			if(appData.current_state.lvl0==APP_STATE0_Playing &&
 				appData.current_state.lvl1==APP_STATE1_Idle && appData.currentBank>1)
 			{
 				appData.currentBank--;
@@ -167,7 +167,7 @@ void APP_UIBtnEventHandler(UI_BUTTON_ACTIONS event)
 		{
 		}
 		break;
-		default
+    default:
 		{
 		}
 		break;

@@ -54,7 +54,7 @@ void UI_ButtonsStateMachine()
 			
 			btnData.editButton = GPIO_ReadInputDataBit(EditButton_port, EditButton_pin);
 			
-			if((btnData.switchesState.switches != btnData.switchesNewState.switches) || 
+			if((btnData.switchesState.switchesByte != btnData.switchesNewState.switchesByte) || 
 				(btnData.editButton==0))
 			{
 				btnData.timerDebounce = UI_BTN_DEBOUNCING_TIME;
@@ -89,31 +89,31 @@ void UI_ButtonsStateMachine()
 						diff.switchesByte = btnData.switchesState.switchesByte ^ btnData.switchesNewState.switchesByte;
 						if(diff.foot1)
 						{
-							btnData.actionHandler(FOOT_1_PRESSED);
+							btnData.actionHandler(UI_BTN_FOOT_1_PRESSED);
 						}
 						else if(diff.foot2)
 						{
-							btnData.actionHandler(FOOT_2_PRESSED);
+							btnData.actionHandler(UI_BTN_FOOT_2_PRESSED);
 						}
 						else if(diff.foot3)
 						{
-							btnData.actionHandler(FOOT_3_PRESSED);
+							btnData.actionHandler(UI_BTN_FOOT_3_PRESSED);
 						}
 						else if(diff.footLeft)
 						{
-							btnData.actionHandler(FOOT_LEFT_PRESSED);
+							btnData.actionHandler(UI_BTN_FOOT_LEFT_PRESSED);
 						}
 						else if(diff.footRight)
 						{
-							btnData.actionHandler(FOOT_RIGHT_PRESSED);
+							btnData.actionHandler(UI_BTN_FOOT_RIGHT_PRESSED);
 						}
 						else if(diff.buffSwitch)
 						{
-							btnData.actionHandler((btnData.switchesNewState.buffSwitch)?BUFFER_SWITCHED_ON:BUFFER_SWITCHED_OFF);
+							btnData.actionHandler((btnData.switchesNewState.buffSwitch)?UI_BTN_BUFFER_SWITCHED_ON:UI_BTN_BUFFER_SWITCHED_OFF);
 						}
 						else
 						{
-							btnData.actionHandler(ERROR);
+							btnData.actionHandler(UI_BTN_ERROR);
 						}
 						btnData.currentState = UI_BTN_STATE_WaitingRelease;
 					}
@@ -135,11 +135,11 @@ void UI_ButtonsStateMachine()
 				btnData.editTimerEnabled=0;
 				if(btnData.editTimer>=UI_BTN_CANCEL_TIME)
 				{
-					btnData.actionHandler(SAVE_CANCEL);
+					btnData.actionHandler(UI_BTN_SAVE_CANCEL);
 				}
 				else
 				{
-					btnData.actionHandler(SAVE_OK);
+					btnData.actionHandler(UI_BTN_SAVE_OK);
 				}
 				btnData.currentState = UI_BTN_STATE_WaitingRelease;
 			}
@@ -157,7 +157,7 @@ void UI_ButtonsExtEvent(UI_BUTTON_EVENTS extEvent)
 {
 	switch(extEvent)
 	{
-		case LOCK:
+		case UI_BTN_LOCK:
 		{
 			if(btnData.currentState==UI_BTN_STATE_ListeningButtons)
 			{
@@ -166,7 +166,7 @@ void UI_ButtonsExtEvent(UI_BUTTON_EVENTS extEvent)
 		}
 		break;
 		
-		case RELEASE:
+		case UI_BTN_RELEASE:
 		{
 			if(btnData.currentState==UI_BTN_STATE_WaitingRelease)
 			{

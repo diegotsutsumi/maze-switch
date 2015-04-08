@@ -73,7 +73,7 @@ void SYS_NVICInit()
 {
 	NVIC_InitTypeDef NVIC_InitStructure;  
 
-	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1); // O que é isso?
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);
 
 	NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn;
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;

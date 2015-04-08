@@ -23,6 +23,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f10x_it.h"
+#include "user_interface.h"
 
 /** @addtogroup STM32F10x_StdPeriph_Template
   * @{

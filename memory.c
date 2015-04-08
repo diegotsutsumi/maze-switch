@@ -32,7 +32,7 @@ void MEM_ExternalEvent(MEM_EVENTS extEvent, unsigned char bank, unsigned char pr
 					return;
 				}
 
-				if((*eventData).Volume==VOLUME_ZERO_GAIN && (*eventData).RelayChunk==0)
+				if((*data).Volume==VOLUME_ZERO_GAIN && (*data).RelayChunk==0)
 				{
 					memData.flashMirror[idx].Volume=VOLUME_ZERO_GAIN;
 					memData.flashMirror[idx].RelayChunk=0;
@@ -41,7 +41,7 @@ void MEM_ExternalEvent(MEM_EVENTS extEvent, unsigned char bank, unsigned char pr
 				}
 				else
 				{
-					memData.flashMirror[idx].memoryHWord = (*eventData).memoryHWord;
+					memData.flashMirror[idx].memoryHWord = (*data).memoryHWord;
 					MEM_ChangeState(MEM_STATE0_Saving,MEM_STATE1_ErasingPage);
 				}
 			}
@@ -106,7 +106,7 @@ void MEM_ChangeState(MEM_STATES_LVL0 a, MEM_STATES_LVL1 b)
 unsigned char MEM_GetPreset(unsigned char bank, unsigned char preset, MemorySlot * out)
 {
 	int idx = MEM_GetIndex(bank, preset);
-	if(idx=-1)
+	if(idx==-1)
 	{
 		return 0;
 	}
@@ -123,7 +123,7 @@ unsigned char MEM_GetPreset(unsigned char bank, unsigned char preset, MemorySlot
 	return 1;
 }
 
-void MEM_SetActionHandler(MEM_SetActionHandler _handler)
+void MEM_SetActionHandler(MEM_ActionHandler _handler)
 {
 	if(!_handler)
 	{
@@ -178,7 +178,7 @@ void MEM_Tasks()
 							memData.entryFlag=1;
 							memData.addrCount=0;
 							memData.setReset=1;
-							MEM_ChangeState(MEM_STATE0_SavingActive,MEM_STATE1_ProgrammingPage);
+							MEM_ChangeState(MEM_STATE0_Saving,MEM_STATE1_ProgrammingPage);
 							memData.handler(MEM_ACTION_SavingComplete);
 						}
 					}
@@ -199,7 +199,7 @@ void MEM_Tasks()
 						if(memData.setReset)
 						{
 							FLASH->CR |= CR_PG_Set;
-							*((__IO uint16_t*)(MEM_GetAddress(memData.addrCount))) = memData.flashMirror[memData.addrCount];
+							*((__IO uint16_t*)(MEM_GetAddress(memData.addrCount))) = memData.flashMirror[memData.addrCount].memoryHWord;
 							memData.setReset=0;
 						}
 						else

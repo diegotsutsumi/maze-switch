@@ -3,6 +3,7 @@
 
 #include "app.h"
 #include "user_interface.h"
+#include "memory.h"
 
 void SYS_Tasks();
 
